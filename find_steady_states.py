@@ -1,5 +1,5 @@
 from PhotochemPy import PhotochemPy
-from run_experiment import set_fluxes, set_atm_structure, apply_rh_profile, OUTPUT_FOLDER
+from run_model import set_fluxes, set_atm_structure, set_rh_profile, OUTPUT_FOLDER
 import numpy as np  
 from pathlib import Path
 from copy import deepcopy
@@ -30,7 +30,7 @@ def find_steady_state(o2_flux):
     # set atm structure
     set_atm_structure(pc, 290)
     set_fluxes(pc, o2_flux)
-    apply_rh_profile(pc)
+    set_rh_profile(pc)
 
     # integreate to equilibrium at 290K
     pc.vars.equilibrium_time=my
@@ -56,7 +56,7 @@ def find_steady_state(o2_flux):
             # set atm structure for given surface temperature
             set_atm_structure(pc, temp)
             set_fluxes(pc, o2_flux)
-            apply_rh_profile(pc)
+            set_rh_profile(pc)
 
             # run the model
             t0 = time[i]
