@@ -31,7 +31,7 @@ def get_steady_state_output(outfolder):
 
    O2_fluxes_included = []
    for O2_flux in O2_fluxes:
-      O2_flux_str = '{:.2e}'.format(O2_flux)
+      o2_flux_str = '{:.2e}'.format(O2_flux)
       for temp in temps:
          try:
             # read last solution
