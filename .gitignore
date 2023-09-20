@@ -1,5 +1,5 @@
 output/*
-plots/*
+plots/*.pdf
 
 .DS_Store
 # Byte-compiled / optimized / DLL files
