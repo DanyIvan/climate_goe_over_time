@@ -92,6 +92,8 @@ def results_with_proxies(linear_increase=False):
     Plots evolution of species with time along with proxies (figures 2 and 3 
     in manuscript)
     '''
+     # read proxies file
+    proxies = pd.read_csv('goe_O2_proxies.csv')
 
     # read output
     if linear_increase:
@@ -196,6 +198,9 @@ def results_with_proxies(linear_increase=False):
     plt.plot(output_case1.time, output_case1.O2_flux, color='k', lw=1)
     plt.plot(output_case2.time, output_case2.O2_flux, color='k', lw=1, ls=':')
     plt.ylabel(r'$O_2$ surface' + '\n' + r'flux ($/cm^2/s$)', fontsize='6')
+    if not linear_increase:
+        plt.ylim([1.6e12, 2.4e12])
+    # plt.yscale('log')
     axs[2].text(0.01, 0.9, 'b)', transform=axs[2].transAxes, size=6)
 
     # panel C: O2  mixing ratio
@@ -204,14 +209,15 @@ def results_with_proxies(linear_increase=False):
     plt.plot(output_case1.time, output_case1.O2, color='k', lw=1, label=r'$O_2$')
     plt.plot(output_case2.time, output_case2.O2, color='k', lw=1, ls=':', label=r'$O_2$')
     plt.yscale('log')
+    plt.ylim([1e-9, 1e-2])
     axs[3].text(0.01, 0.9, 'c)', transform=axs[3].transAxes, size=6)
     plt.ylabel(r'$O_2$ mixing ratio', fontsize='6')
     for gl_time in glaciation_times:
         axs[3].axvspan(gl_time, gl_time-10, alpha=0.6, color='#6495ED')
     
     # plot mif constraints. I choose ages based on nearness to glaciations
-    transvaal_mif_times = [2494, glc_t2-28, glc_t3-7, 2284, 2245]
-    huronian_mif_times = [2415]
+    transvaal_mif_times =  proxies[(proxies.Basin=='Transvaal')&\
+        (proxies.Proxy=='MIF-S')]['Assigned date Mya']
     for time in transvaal_mif_times:
         axs[3].arrow(time, 1e-6, 0, -5e-7, head_width=4, 
             width=0, head_length=1.2e-7, fc='k', ec='k')
@@ -220,8 +226,8 @@ def results_with_proxies(linear_increase=False):
         # if time in [2284, 2247]:
         #     plt.text(time - 5, 4e-7, '?', fontsize=7)
     
-    transvaal_mdf_times = [glc_t3+7, 2316, 2295, 2272]
-    huronian_mdf_times = [glc_t3+16, 2278]
+    transvaal_mdf_times = proxies[(proxies.Basin=='Transvaal')&\
+        (proxies.Proxy=='No MIF-S')]['Assigned date Mya']
     for time in transvaal_mdf_times:
         axs[3].arrow(time, 1e-5, 0, 9e-6, head_width=4, 
             width=0, head_length=1.2e-5, fc='#A42A04', ec='#A42A04')
@@ -252,7 +258,7 @@ def results_with_proxies(linear_increase=False):
             color='#A42A04')
         plt.text(2100 -10, 3.5e-8, 'MIF-S constraints', fontsize=5)
     
-    # Panel C: proxy records
+     # Panel C: proxy records
     # -------------------------------------------------------------------
     plt.sca(axs[4])
     plt.ylim([0,1])
@@ -288,50 +294,68 @@ def results_with_proxies(linear_increase=False):
         box_ = matplotlib.patches.Rectangle((box['start'],0.1), box['span'], 0.15, 
             facecolor=box['fc'], edgecolor='k')
         axs[4].add_patch(box_)
-    plt.text(0.08, 0.41 -0.02, 'Transvaal\n   Basin', fontsize=6, transform=plt.gcf().transFigure)
-    plt.text(0.085, 0.355, 'Huronian\n   Basin', fontsize=6, transform=plt.gcf().transFigure)
-    
+    plt.text(0.08, 0.41 -0.02, 'Transvaal\n   Basin', fontsize=6, 
+        transform=plt.gcf().transFigure)
+    plt.text(0.085, 0.36, 'Huronian\n   Basin', fontsize=6, 
+        transform=plt.gcf().transFigure)
+
     # plot proxies. Ages are approximates from Gumsley 2017 Fig 3
-    # plot MIF-S
-    h1 = plt.scatter(transvaal_mif_times, [0.475] * len(transvaal_mif_times),
-        marker="*", color='k', zorder=10, s=12)
-    plt.scatter(huronian_mif_times, [0.175] * len(huronian_mif_times),
-        marker="*", color='k', zorder=1, s=12)
-    # plt.text(2284-3, 0.475 - 0.02, '?', fontsize=5)
-    # plt.text(2247-3, 0.475 - 0.02, '?', fontsize=5)
-
-    # plot MDF-S
-    h2 = plt.scatter(transvaal_mdf_times, [0.475] * len(transvaal_mdf_times),
-        marker="*", color='#A42A04', s=12, zorder=10)
-    plt.scatter(huronian_mdf_times, [0.175] * len(huronian_mdf_times),
-        marker="*", color='#A42A04', s=12)
-    plt.text(2415-4, 0.175 - 0.02, '?', fontsize=5)
-    plt.text(glc_t3+12, 0.175 - 0.02, '?', fontsize=5)
-    plt.text(2278-4, 0.175 - 0.02, '?', fontsize=5)
+    colors = {'MIF-S':'k', 'No MIF-S':'#A42A04', 'Negative Ce anomaly':'#A42A04', 
+        'Mn deposits':'#A42A04','Detrital pyrite and uraninite ':'k',
+        'Oxidized paleosol':'#A42A04', 'Red beds':'#A42A04','Reduced paleosol':'k'}
     
-    # detrital grains
-    h3 = plt.scatter([2494, 2440, 2465, glc_t2 + 9], [0.175, 0.175, 0.475, 0.175],
-        marker="o", color='k', zorder=1, s=7)
-    h3 = plt.scatter([2465], [0.475], marker="o", color='k', zorder=1, s=7)
-
-    # reduced paelosols
-    h4 = plt.scatter([2454], [0.175], marker="d", color='k', zorder=1, s=7)
-    h5 = plt.scatter([2305, 2230], [0.175, 0.475], marker="d", color='#A42A04',
-        zorder=1, s=7)
-    h5 = plt.scatter([2230], [0.475], marker="d", color='#A42A04',
-        zorder=1, s=7)
+    markers = {'MIF-S':'*', 'No MIF-S':'*', 'Negative Ce anomaly':'Ce', 
+        'Mn deposits':'Mn', 'Detrital pyrite and uraninite ':'o', 
+        'Oxidized paleosol':'d', 'Red beds':'Hm', 'Reduced paleosol':'d'}
     
-    # Mn deposits
-    h6 = plt.text(2311, 0.475 -0.02, 'Mn', fontsize=4, color='#A42A04')
-    plt.text(2398, 0.475 -0.02, 'Mn', fontsize=4, color='#A42A04')
+    types = {'MIF-S':'s', 'No MIF-S':'s', 'Negative Ce anomaly':'t', 
+        'Mn deposits':'t', 'Detrital pyrite and uraninite ':'s',
+        'Oxidized paleosol':'s', 'Red beds':'t', 'Reduced paleosol':'s'}
 
-    # red beds
-    h7 = plt.text(2300, 0.175 - 0.02, 'Hm', fontsize=4, color='#A42A04')
-    plt.text(2225, 0.475 -0.02, 'Hm', fontsize=4, color='#A42A04')
 
-    # cerium anomalies
-    h8 = plt.text(2410, 0.475 -0.02, '-Ce', fontsize=4, color='#A42A04')
+    labels = {}
+    positions = [0.475, 0.175]
+    for proxy in proxies.Proxy.unique():
+        for i, basin in enumerate(['Transvaal', 'Huronian']):
+            data_basin = proxies[proxies.Basin == basin]
+            data_basin = data_basin[data_basin.Proxy == proxy]
+            if types[proxy] == 's':
+                plot = plt.scatter(data_basin['Assigned date Mya'], 
+                    [positions[i]] * len(data_basin['Assigned date Mya']),
+                    marker=markers[proxy], color=colors[proxy], zorder=10, s=12)
+                labels[proxy] = plot
+            else:
+                for index, row in data_basin.iterrows():
+                    text = plt.text(x=row['Assigned date Mya'], y=positions[i]-0.02,
+                            s=markers[proxy], color=colors[proxy], fontsize=5)
+                    labels[proxy] = text
 
+    # Add question marks
+    proxies_qm = proxies[proxies['has question mark']]
+    for i, row in proxies_qm.iterrows():
+        if row.Basin == 'Huronian':
+            plt.text(x=row['Assigned date Mya'] -4, y=0.175-0.02, s='?', fontsize=5)
+        elif row.Basin == 'Transvaal':
+            plt.text(x=row['Assigned date Mya'] -4, y=0.475-0.02, s='?', fontsize=5)
+
+    #add legend
+    class TextHandler(HandlerBase):
+        def create_artists(self, legend, orig_handle,xdescent, ydescent,
+                            width, height, fontsize,trans):
+            h = copy.copy(orig_handle)
+            h.set_position((width/2.,height/2.))
+            h.set_transform(trans)
+            h.set_ha("center");h.set_va("center")
+            fp = orig_handle.get_font_properties().copy()
+            fp.set_size(fontsize)
+            # uncomment the following line, 
+            # if legend symbol should have the same size as in the plot
+            h.set_font_properties(fp)
+            return [h]
+    handlermap = {type(text) : TextHandler()}
+    axs[4].legend(labels.values(), labels.keys(), handler_map=handlermap,
+        fontsize=4, ncol=2, frameon=0)
+    
     # formation names
     plt.text(glc_t1 + 2, 0.4 + 0.18, 'Mkg', color='b', fontsize=5)
     plt.text(glc_t1 + 2, 0.1 + 0.18, 'RL', color='b', fontsize=5)
@@ -346,48 +370,26 @@ def results_with_proxies(linear_increase=False):
     age_mak = 2423 # Senger et. al. 2023
     age_upper_timeball_hill = 2256 # Rasmussen et al. (2013).
     axs[4].vlines(x=age_lower_timeball_hill, ymin=0.67, ymax=0.78, linewidth=0.8,
-                      color='k')
-    axs[4].hlines(y=0.78, xmin=age_lower_timeball_hill-7, xmax=age_lower_timeball_hill+7, linewidth=0.8,color='k')
+        color='k')
+    axs[4].hlines(y=0.78, xmin=age_lower_timeball_hill-7, 
+        xmax=age_lower_timeball_hill+7, linewidth=0.8,color='k')
     plt.text(age_lower_timeball_hill+10, 0.8, r'$2316 \pm 7^4$', fontsize=4.5)
     axs[4].vlines(x=age_mak, ymin=0.67, ymax=0.78, linewidth=0.8,
-                      color='k')
+        color='k')
     axs[4].hlines(y=0.78, xmin=age_mak-1, xmax=age_mak+1, linewidth=0.8,
-                      color='k')
+        color='k')
     plt.text(age_mak+20, 0.8, r'$2423 \pm 1^1$', fontsize=4.5)
     axs[4].vlines(x=age_upper_timeball_hill, ymin=0.67, ymax=0.78, linewidth=0.8,
-                      color='k')
-    axs[4].hlines(y=0.78, xmin=age_upper_timeball_hill-12, xmax=age_upper_timeball_hill+12, linewidth=0.8,
-                      color='k')
+        color='k')
+    axs[4].hlines(y=0.78, xmin=age_upper_timeball_hill-12, 
+        xmax=age_upper_timeball_hill+12, linewidth=0.8,color='k')
     plt.text(age_upper_timeball_hill+10, 0.8, r'$2256 \pm 12^5$', fontsize=4.5)
     # age_dui_max = 2424 #+-12 Schröder et. al 2016
     # age_dui_min = 2342 #± 18 Zeh et. al. 2020
-    axs[4].vlines(x=2370, ymin=0.67, ymax=0.78, linewidth=0.8,
-                      color='k')
-    axs[4].hlines(y=0.78, xmin=2420, xmax=2342, linewidth=0.8,
-                      color='k')
+    axs[4].vlines(x=2370, ymin=0.67, ymax=0.78, linewidth=0.8, color='k')
+    axs[4].hlines(y=0.78, xmin=2420, xmax=2342, linewidth=0.8, color='k')
     plt.text(2370+30, 0.8, r'$2424-2342^{2,3}$?', fontsize=4.5)
     
-    # legend
-    class TextHandler(HandlerBase):
-        def create_artists(self, legend, orig_handle,xdescent, ydescent,
-                            width, height, fontsize,trans):
-            h = copy.copy(orig_handle)
-            h.set_position((width/2.,height/2.))
-            h.set_transform(trans)
-            h.set_ha("center");h.set_va("center")
-            fp = orig_handle.get_font_properties().copy()
-            fp.set_size(fontsize)
-            # uncomment the following line, 
-            # if legend symbol should have the same size as in the plot
-            h.set_font_properties(fp)
-            return [h]
-
-    labels = ["MIF-S", "No MIF-S", "Detrital pyrite\nand uraninite", "Reduced paleosol",
-              "Oxidized paleosol", "Mn deposits", "Red beds", "Negative Ce anomaly"]
-    handles = [h1, h2, h3, h4, h5, h6, h7, h8]
-    handlermap = {type(h6) : TextHandler()}
-    axs[4].legend(handles, labels, handler_map=handlermap,fontsize=4, ncol=2,
-        frameon=0)
     axs[4].axis('off')
 
     # Panel D: ch4 mixing ratio
@@ -396,6 +398,7 @@ def results_with_proxies(linear_increase=False):
     plt.plot(output_case1.time, output_case1.CH4, color='k', lw=1, label=r'$CH_4$')
     plt.plot(output_case2.time, output_case2.CH4, color='k', lw=1, ls=':', label=r'$CH_4$')
     plt.yscale('log')
+    plt.ylim([5e-7, 1e-3])
     axs[5].text(0.01, 0.9, 'D)', transform=axs[5].transAxes, size=6)
     plt.ylabel(r'$CH_4$ mixing ratio', fontsize='6')
     for gl_time in glaciation_times:
