@@ -12,13 +12,31 @@ using the following command:
 
 ```
 git clone -b garduno_et_al_2024 https://github.com/DanyIvan/PhotochemPy
+cd PhotochemPy
 ```
 
-Then follow the installation instructions described in https://github.com/DanyIvan/PhotochemPy/tree/garduno_et_al_2024.
+Then create an anaconda environment to install Photochempy (using python 3.7 is
+what works for me):
+
+```
+conda create -n photochempy -c conda-forge python=3.7 numpy=1.21 scipy scikit-build
+conda activate photochempy
+```
+
+finally, install Photochempy with:
+
+```
+python setup.py install
+```
 
 ## Run scripts
 
-Once Photochempy is installed, you can run the Python scripts to reproduce our experiments.
+Once Photochempy is installed, you can clone this repository to run the Python scripts to reproduce our results:
+
+```
+git clone https://github.com/DanyIvan/climate_goe_over_time
+```
+
 Our code is organized in the following way:
 
 - `input/`: Contains atmospheric profiles used in our simulations
