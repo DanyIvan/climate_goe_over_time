@@ -33,7 +33,7 @@ def interp_press(surf_temp):
     temps = np.arange(240, 360.5, 0.5)
     return np.interp(surf_temp, temps, surf_press)
 
-def set_fluxes(pc, o2_flux):
+def set_o2_flux(pc, o2_flux):
     '''
     Sets O2 and CH4 surface input fluxes to photochemical model with a 0.49 ratio
     input:
@@ -46,7 +46,16 @@ def set_fluxes(pc, o2_flux):
     pc.set_lbound('CH4',2)
     pc.set_surfflux('O2', o2_flux)
     pc.set_surfflux('CH4', o2_flux * 0.49)
-    
+
+def set_ri_flux(pc, ri_flux=3.3e10):
+    '''
+    Sets total reductant input flux, distributing between H2, CO and
+    '''
+    pc.set_lbound('H2', 2)
+    pc.set_lbound('CO',2)
+    pc.set_surfflux('H2', ri_flux*(3/3.3))
+    pc.set_surfflux('CO', ri_flux*(3/33))
+  
 
 def set_atm_structure(pc, surf_temp):
     '''
@@ -82,7 +91,7 @@ def set_rh_profile(pc, rh=0.35):
     pc.data.relative_humidity = rh
 
 
-def run_model(folder_name, time, o2_flux_ev, surf_temp_ev):
+def run_model(folder_name, time, o2_flux_ev, surf_temp_ev, ri_flux_ev):
     '''
     Run experiment for a given O2 surface flux and temperature evolution
     input:
@@ -103,7 +112,8 @@ def run_model(folder_name, time, o2_flux_ev, surf_temp_ev):
         'input/Wogan2022/Sun_2.4Ga.txt')
 
     # set initial conditions
-    set_fluxes(pc, o2_flux_ev[0])
+    set_o2_flux(pc, o2_flux_ev[0])
+    set_ri_flux(pc, ri_flux_ev[0])
     set_atm_structure(pc, surf_temp_ev[0])
     set_rh_profile(pc)
 
@@ -116,6 +126,7 @@ def run_model(folder_name, time, o2_flux_ev, surf_temp_ev):
     folder = OUTPUT_FOLDER + folder_name
     Path(folder).mkdir(exist_ok=True, parents=True)
     np.savetxt(f'{folder}/o2_flux.txt', o2_flux_ev)
+    np.savetxt(f'{folder}/ri_flux.txt', ri_flux_ev)
 
     # evolve over time
     t0 = time[0]
@@ -124,7 +135,8 @@ def run_model(folder_name, time, o2_flux_ev, surf_temp_ev):
         t_eval = [time[i+1] * my]
 
         # set atm conditions
-        set_fluxes(pc, o2_flux_ev[i])
+        set_o2_flux(pc, o2_flux_ev[i])
+        set_ri_flux(pc, ri_flux_ev[i])
         set_atm_structure(pc, surf_temp_ev[i])
         set_rh_profile(pc)
 
