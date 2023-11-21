@@ -30,7 +30,7 @@ if change_during_glaciations:
             o2_flux_ev[idxs] = o2_flux_ev[idxs] + o2_flux_ev[idxs]*0.6
 
 
-ri_flux_ev = ri_flux_evolution_linear(time, 3e10, 1e10)
+ri_flux_ev = ri_flux_evolution_linear(time, ri_flux_0, ri_flux_gl3)
 
 # run model
 chg_durung_gl_str = '_change_during_glaciations' if change_during_glaciations\
