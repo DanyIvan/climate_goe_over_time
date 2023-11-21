@@ -78,22 +78,22 @@ def O2_flux_evolution_linear(time, o2_flux_0, o2_flux_gl3,
 
     return o2_flux_ev
 
-def ri_flux_evolution_linear(time, ri_flux_0, ri_flux_gl3):
+def ri_flux_evolution_linear(time, ri_flux_0, ri_flux_gl4):
     '''
     Defines reductant input flux linear decrease evolution over time.
     input:
         time (1d array):  time in my
         ri_flux_0 (float): ri flux (molecules/cm^2/s) at beginning of run
-        ri_flux_gl3 (float): ri flux (molecules/cm^2/s) during 3rd glaciation
+        ri_flux_gl4 (float): ri flux (molecules/cm^2/s) during 4rd glaciation
     returns:
         ri_flux_ev (1d array): ri surface flux evolution over time
     '''
     times = (0, glaciation_times[3] + 10)
-    # times = (0, 500)
-    ri_fluxes = (ri_flux_0, ri_flux_gl3)
+    ri_fluxes = (ri_flux_0, ri_flux_gl4)
     a,b = np.polyfit(times, ri_fluxes, deg=1)
     ri_flux_ev = a * time + b
     
     ctime = glaciation_times[3] + 10
-    ri_flux_ev[ctime:] = ri_flux_ev[ctime]
+    cidx = np.where(time == ctime)[0][0]
+    ri_flux_ev[cidx:] = ri_flux_ev[cidx]
     return ri_flux_ev

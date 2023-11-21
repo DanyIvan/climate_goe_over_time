@@ -6,13 +6,13 @@ import argparse
 # define run parameters from terminal
 parser = argparse.ArgumentParser()
 parser.add_argument('--ri_flux_0', default='3e10')
-parser.add_argument('--ri_flux_gl3', default='1e10')
+parser.add_argument('--ri_flux_gl4', default='1e10')
 parser.add_argument('--change_during_glaciations', default='False')
 
 args = parser.parse_args()
 
 ri_flux_0 = eval(args.ri_flux_0)
-ri_flux_gl3 = eval(args.ri_flux_gl3)
+ri_flux_gl4 = eval(args.ri_flux_gl4)
 change_during_glaciations = eval(args.change_during_glaciations)
 
 # define surface temperature, O2 input flux, and reductant input flux evolution
@@ -29,11 +29,10 @@ if change_during_glaciations:
             idxs = np.where((time >= gl_time+10)&(time <= gl_time+20))[0]
             o2_flux_ev[idxs] = o2_flux_ev[idxs] + o2_flux_ev[idxs]*0.6
 
-
-ri_flux_ev = ri_flux_evolution_linear(time, ri_flux_0, ri_flux_gl3)
+ri_flux_ev = ri_flux_evolution_linear(time, ri_flux_0, ri_flux_gl4)
 
 # run model
 chg_durung_gl_str = '_change_during_glaciations' if change_during_glaciations\
     else ''
-name = 'linear_o2_flux_increase' + chg_durung_gl_str
+name = 'linear_ri_flux_decrease' + chg_durung_gl_str
 run_model(name, time, o2_flux_ev, surf_temp_ev, ri_flux_ev)
