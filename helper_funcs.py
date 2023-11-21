@@ -47,13 +47,13 @@ def surf_temp_evolution(time, T_tmpt=290, T_mg=320, T_gl=250):
     return np.array(list(map(surf_temp, time)))
         
 
-def O2_flux_evolution_linear(time, o2_flux_gl2, o2_flux_gl3, 
+def O2_flux_evolution_linear(time, o2_flux_0, o2_flux_gl3, 
         change_during_glaciations=False):
     '''
     Defines O2 flux linear increase evolution over time.
     input:
         time (1d array):  time in my
-        o2_flux_gl2 (float): O2 flux (molecules/cm^2/s) during 2nd glaciation
+        o2_flux_0 (float): O2 flux (molecules/cm^2/s) at beginning of run
         o2_flux_gl3 (float): O2 flux (molecules/cm^2/s) during 3rd glaciation
         change_during_glaciations (bool): decrease O2 flux by 60% during 
             glaciations and increase it by 60% during moist greenhouse climates
@@ -61,8 +61,8 @@ def O2_flux_evolution_linear(time, o2_flux_gl2, o2_flux_gl3,
     returns:
         o2_flux_ev (1d array): o2 surface flux evolution over time
     '''
-    times = (glaciation_times[1] + 10, glaciation_times[2] + 10)
-    o2_fluxes = (o2_flux_gl2, o2_flux_gl3)
+    times = (0, glaciation_times[2] + 10)
+    o2_fluxes = (o2_flux_0, o2_flux_gl3)
     a,b = np.polyfit(times, o2_fluxes, deg=1)
     o2_flux_ev = a * time + b
     
@@ -72,10 +72,28 @@ def O2_flux_evolution_linear(time, o2_flux_gl2, o2_flux_gl3,
             idxs = np.where((time >= gl_time)&(time <= gl_time+10))[0]
             o2_flux_ev[idxs] = o2_flux_ev[idxs] - o2_flux_ev[idxs]*0.6
 
-            # increase flux by 60% during glaiations
+            # increase flux by 60% after glaiations
             idxs = np.where((time >= gl_time+10)&(time <= gl_time+20))[0]
             o2_flux_ev[idxs] = o2_flux_ev[idxs] + o2_flux_ev[idxs]*0.6
 
     return o2_flux_ev
 
-
+def ri_flux_evolution_linear(time, ri_flux_0, ri_flux_gl3):
+    '''
+    Defines reductant input flux linear decrease evolution over time.
+    input:
+        time (1d array):  time in my
+        ri_flux_0 (float): ri flux (molecules/cm^2/s) at beginning of run
+        ri_flux_gl3 (float): ri flux (molecules/cm^2/s) during 3rd glaciation
+    returns:
+        ri_flux_ev (1d array): ri surface flux evolution over time
+    '''
+    times = (0, glaciation_times[3] + 10)
+    # times = (0, 500)
+    ri_fluxes = (ri_flux_0, ri_flux_gl3)
+    a,b = np.polyfit(times, ri_fluxes, deg=1)
+    ri_flux_ev = a * time + b
+    
+    ctime = glaciation_times[3] + 10
+    ri_flux_ev[ctime:] = ri_flux_ev[ctime]
+    return ri_flux_ev
