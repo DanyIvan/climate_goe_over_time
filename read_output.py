@@ -81,6 +81,7 @@ def get_surface_output(outfolder):
 
    # read O2 flux
    o2_fluxes = np.loadtxt(f'{outfolder}/o2_flux.txt')
+   ri_fluxes = np.loadtxt(f'{outfolder}/ri_flux.txt')
 
    sol_dict = {
       'time': [],
@@ -123,7 +124,8 @@ def get_surface_output(outfolder):
          'S8AER_col': np.trapz(sol_dict['S8AER'] * sol_dict['den'],
                   np.arange(0.25, 100, 0.5)*1e5, axis=1),
          'T_time': sol_dict['T_time'][:, 0],
-         'O2_flux': [o2_fluxes[i] for i in sol_idxs]
+         'O2_flux': [o2_fluxes[i] for i in sol_idxs],
+         'ri_flux': [ri_fluxes[i] for i in sol_idxs]
       }
 
    surface_output = pd.DataFrame(surface_sol_dict)
@@ -144,6 +146,7 @@ def get_profiles(outfolder):
 
    # read O2 fluxes
    o2_fluxes = np.loadtxt(f'{outfolder}/o2_flux.txt')
+   ri_fluxes = np.loadtxt(f'{outfolder}/ri_flux.txt')
 
    # read profiles and store them in a dataframe
    data = []
@@ -167,6 +170,7 @@ def get_profiles(outfolder):
             sol_df = pd.DataFrame(sp_sol_dict)
             sol_df['time'] = sol['time'][0]
             sol_df['O2_flux'] = o2_fluxes[i]
+            sol_df['ri_flux'] = ri_fluxes[i]
             data.append(sol_df)
 
    data = pd.concat(data)
