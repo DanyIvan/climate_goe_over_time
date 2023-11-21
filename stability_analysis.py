@@ -1,5 +1,5 @@
 from PhotochemPy import PhotochemPy, io
-from run_model import set_fluxes, set_atm_structure, set_rh_profile, OUTPUT_FOLDER
+from run_model import set_o2_flux, set_atm_structure, set_rh_profile, OUTPUT_FOLDER
 import numpy as np  
 from pathlib import Path
 from copy import deepcopy
@@ -31,7 +31,7 @@ def stability_analysis(o2_flux):
 
     # set atm structure
     set_atm_structure(pc, 290)
-    set_fluxes(pc, o2_flux)
+    set_o2_flux(pc, o2_flux)
     set_rh_profile(pc)
 
     # integreate to equilibrium at 290K
@@ -50,7 +50,7 @@ def stability_analysis(o2_flux):
         try:
             # set atm structure for given surface temperature
             set_atm_structure(pc, temp)
-            set_fluxes(pc, o2_flux)
+            set_o2_flux(pc, o2_flux)
             set_rh_profile(pc)
 
             # integrate for 1my to get to steady state
@@ -64,7 +64,7 @@ def stability_analysis(o2_flux):
 
             # perturb O2 input flux by 10%
             perturbation = o2_flux * 0.1
-            set_fluxes(pc, o2_flux + perturbation)
+            set_o2_flux(pc, o2_flux + perturbation)
 
             # integrate for 1my to get to steady state
             outfilename = folder + f'/{o2_flux_str}_{temp}_perturbed'
