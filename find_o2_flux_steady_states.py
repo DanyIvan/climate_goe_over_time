@@ -29,7 +29,7 @@ def find_steady_state(o2_flux):
 
     # set atm structure
     set_atm_structure(pc, 290)
-    set_fluxes(pc, o2_flux)
+    set_o2_flux(pc, o2_flux)
     set_rh_profile(pc)
 
     # integreate to equilibrium at 290K
