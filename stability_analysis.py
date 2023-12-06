@@ -18,8 +18,7 @@ my = 365*24*60*60*1e6
 def stability_analysis(o2_flux):
     '''
     Run photochemical model to steady state at given surface O2 flux 
-        in a range of temperatures from 250k to 350k, and pertub the flux by
-        10% 
+        in a range of temperatures from 250k to 350k, and pertub the flux by 5% 
     input:
         o2_flux (float): surface O2 flux (molecules/cm^2/s)
     '''
@@ -62,8 +61,8 @@ def stability_analysis(o2_flux):
                 outfilename=outfilename,
                 amount2save=0)
 
-            # perturb O2 input flux by 10%
-            perturbation = o2_flux * 0.1
+            # perturb O2 input flux by 5%
+            perturbation = o2_flux * 0.05
             set_o2_flux(pc, o2_flux + perturbation)
 
             # integrate for 1my to get to steady state
