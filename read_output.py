@@ -3,17 +3,23 @@ import pandas as pd
 import numpy as np
 import os
 
-def get_steady_state_output(outfolder, filename_suffix='_8'):
+def get_steady_state_output(outfolder, flux='O2', filename_suffix='_8'):
    '''
    Reads steady states surface output stored in outfolder
    input:
       outfolder (str): folder path where output is stored
+      flux (str): if equals to "O2" the function will read files from an experiment 
+         in which O2 flux was varied to find steady states. If equals to "ri"
+         the function will read files from an experiment in which the reductant 
+         input flux was varied to find steady states
+      filename_suffix (str): suffix of the files to read
    returns:
       steady_states (pandas dataframe): dataframe with surface output
    '''
 
    # define surface O2 flux and temp range for steady states
    O2_fluxes = np.arange(1, 6, 0.05)*1e12
+   ri_fluxes =  np.linspace(3.3326e10, 1e9, 30)
    temps = np.arange(250, 360, 10)
 
    sol_dict = {
@@ -28,24 +34,32 @@ def get_steady_state_output(outfolder, filename_suffix='_8'):
       'den': []
                }
 
-   O2_fluxes_included = []
-   for O2_flux in O2_fluxes:
-      o2_flux_str = '{:.2e}'.format(O2_flux)
+   fluxes_included = []
+   if flux == 'O2':
+      fluxes = O2_fluxes
+      dict_flux_str = 'O2_flux'
+   elif flux == 'ri':
+      fluxes = ri_fluxes
+      dict_flux_str = 'ri_flux'
+
+   for flux in fluxes:
+      flux_str = '{:.2e}'.format(flux)
       for temp in temps:
          try:
             # read last solution
-            filename = f'{outfolder}/{o2_flux_str}_{temp}' + filename_suffix
+            filename = f'{outfolder}/{flux_str}_{temp}' + filename_suffix
             sol = io.read_evolve_output(filename)
-            # ignore solutions 
+            # ignore solutions where the model broke (they have O2 surface values
+            # lower than 1e12)
             if sol['O2'][0][0] > 1E-12:
-               O2_fluxes_included.append(O2_flux)
+               fluxes_included.append(flux)
                for key in sol_dict.keys(): 
                   sol_dict[key].append(sol[key][0])         
          except Exception as e:
                print(e)
     
    for key in sol_dict.keys():
-      if key == 'time' or key == 'O2_flux':
+      if key == 'time':
          sol_dict[key] = np.hstack([sol_dict[key]])
       else:
          sol_dict[key] = np.vstack(sol_dict[key])
@@ -62,13 +76,13 @@ def get_steady_state_output(outfolder, filename_suffix='_8'):
       'S8AER_col': np.trapz(sol_dict['S8AER'] * sol_dict['den'],
                np.arange(0.25, 100, 0.5)*1e5, axis=1),
       'T_time': sol_dict['T_time'][:, 0],
-      'O2_flux': O2_fluxes_included
+      dict_flux_str: fluxes_included
    }
 
    steady_states = pd.DataFrame(surface_sol_dict)
    return steady_states
 
-def get_stability_analysis_output(outfolder, filename_suffix='_8'):
+def get_stability_analysis_output(outfolder):
    '''
    Reads steady states surface output from stability analysis output stored in
       outfolder
