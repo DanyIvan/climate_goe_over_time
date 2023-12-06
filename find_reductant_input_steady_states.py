@@ -13,10 +13,10 @@ o2_flux = 2e12
 o2_flux_str = '2e12'
 def find_steady_state(ri_flux):
     '''
-    Run photochemical model to steady state at given surface O2 flux 
+    Run photochemical model to steady state at a given reductant input flux
         in a range of temperatures from 250k to 350k
     input:
-        o2_flux (float): surface O2 flux (molecules/cm^2/s)
+        ri_flux (float): surface reductant input flux (molecules/cm^2/s)
     '''
     name = f'steady_states_ri_temp_{o2_flux_str}'
     folder = OUTPUT_FOLDER + name
