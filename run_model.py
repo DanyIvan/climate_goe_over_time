@@ -53,8 +53,8 @@ def set_ri_flux(pc, ri_flux=3.3e10):
     '''
     pc.set_lbound('H2', 2)
     pc.set_lbound('CO',2)
-    pc.set_surfflux('H2', ri_flux*(3/3.3))
-    pc.set_surfflux('CO', ri_flux*(3/33))
+    pc.set_surfflux('H2', ri_flux/ 1.1)
+    pc.set_surfflux('CO', ri_flux/11)
   
 
 def set_atm_structure(pc, surf_temp):
