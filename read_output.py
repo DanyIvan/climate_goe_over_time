@@ -3,8 +3,7 @@ import pandas as pd
 import numpy as np
 import os
 
-# TODO
-def get_steady_state_output(outfolder):
+def get_steady_state_output(outfolder, filename_suffix='_8'):
    '''
    Reads steady states surface output stored in outfolder
    input:
@@ -35,7 +34,8 @@ def get_steady_state_output(outfolder):
       for temp in temps:
          try:
             # read last solution
-            sol = io.read_evolve_output(f'{outfolder}/{o2_flux_str}_{temp}_8')
+            filename = f'{outfolder}/{o2_flux_str}_{temp}' + filename_suffix
+            sol = io.read_evolve_output(filename)
             # ignore solutions 
             if sol['O2'][0][0] > 1E-12:
                O2_fluxes_included.append(O2_flux)
@@ -68,6 +68,25 @@ def get_steady_state_output(outfolder):
    steady_states = pd.DataFrame(surface_sol_dict)
    return steady_states
 
+def get_stability_analysis_output(outfolder, filename_suffix='_8'):
+   '''
+   Reads steady states surface output from stability analysis output stored in
+      outfolder
+   input:
+      outfolder (str): folder path where output is stored
+   returns:
+      steady_states (pandas dataframe): dataframe with stability analysis
+         surface output
+   '''
+   output = get_steady_state_output(outfolder, filename_suffix='')
+   output['type'] = 'steady state'
+   output_perturbed = get_steady_state_output(outfolder,
+      filename_suffix='_perturbed')
+   output_perturbed['type'] = '5pct perturbed steady state'
+   output = pd.concat([output, output_perturbed])
+   return output
+   
+
 def get_surface_output(outfolder):
    '''
    Reads surface output from experiment stored in outfolder
@@ -98,13 +117,16 @@ def get_surface_output(outfolder):
 
    sol_idxs = []
    for i in range(Nfiles-1):
-      # read solution
-      sol = io.read_evolve_output(f'{outfolder}/{i}')
-      # ignore runs in which model broke
-      if sol['O2'][0][0] > 1E-12:
-            sol_idxs.append(i)
-            for key in sol_dict.keys():
-               sol_dict[key].append(sol[key][0])
+       try:
+           # read solution
+           sol = io.read_evolve_output(f'{outfolder}/{i}')
+           # ignore runs in which model broke
+           if sol['O2'][0][0] > 1E-12:
+               sol_idxs.append(i)
+               for key in sol_dict.keys():
+                   sol_dict[key].append(sol[key][0])
+       except Exception as e:
+           print(e)
 
    for key in sol_dict.keys():
       if key == 'time' or key == 'O2_flux':
