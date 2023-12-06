@@ -209,7 +209,7 @@ def results_with_proxies(o2_flux_increase=False, ri_flux_decrease=False,
     # plot times where profiles will be made
     profile_points_age = [2460, 2425, 2420]
     profile_points_temp = [290, 250, 320]
-    if not (o2_flux_increase or ri_flux_decrease):
+    if profiles or not (o2_flux_increase or ri_flux_decrease):
         plt.scatter(profile_points_age, profile_points_temp, marker='x',
                     color='k', s=14, zorder=10, linewidths=0.8)
 
@@ -531,14 +531,23 @@ def results_with_proxies(o2_flux_increase=False, ri_flux_decrease=False,
     if profiles:
         axs[7].set_visible(False)
         # read model output
-        output = pd.read_csv('reduced_model_output/atmospheric_profiles.csv')
+        if o2_flux_increase:
+            output = pd.read_csv('reduced_model_output/profiles_o2_flux_incr.csv')
+        elif ri_flux_decrease:
+            output = pd.read_csv('reduced_model_output/profiles_ri_flux_decr.csv')
+        else:
+            output = pd.read_csv('reduced_model_output/profiles_o2_flux_constant.csv')
 
         # change time scale
         my = 365*24*60*60*1e6
         output['time'] = np.abs(output['time']/my - 2500)
 
-        output_case1 = output[output.O2_flux == 1.8e12]
-        output_case2 = output[output.O2_flux == 2.2e12]
+        if not (o2_flux_increase or ri_flux_decrease):
+            output_case1 = output[output.O2_flux == 1.8e12]
+            output_case2 = output[output.O2_flux == 2.2e12]
+        else:
+            output_case1 = output[output.change_during_glaciations]
+            output_case2 = output[~output.change_during_glaciations]
 
         # profile_points_age = [2460, 2425, 2415.3]
         profile_points_age = output.time.unique()
@@ -604,14 +613,16 @@ def results_with_proxies(o2_flux_increase=False, ri_flux_decrease=False,
     plt.subplots_adjust(hspace=0, wspace=0.08)
 
     if o2_flux_increase:
-        plt.savefig(f'o2_flux_linear_increase_evolution.pdf', bbox_inches='tight')
+        filename = 'o2_flux_linear_increase_evolution'
     elif ri_flux_decrease:
-        plt.savefig(f'ri_flux_linear_decrease_evolution.pdf', bbox_inches='tight')
+        filename = 'ri_flux_linear_decrease_evolution'
     else:
-        if profiles:
-            plt.savefig(f'o2_flux_constant_evolution_profiles.pdf', bbox_inches='tight')
-        else:
-            plt.savefig(f'o2_flux_constant_evolution.pdf', bbox_inches='tight')
+        filename = 'o2_flux_constant_evolution'
+
+    if profiles:
+        filename = filename + '_profiles'
+
+    plt.savefig(f'{filename}.pdf', bbox_inches='tight')
 
 
 def profiles():
@@ -619,7 +630,7 @@ def profiles():
     Plot atmospheric profiles at three points in time.
     '''
     # read model output
-    output = pd.read_csv('reduced_model_output/atmospheric_profiles.csv')
+    output = pd.read_csv('reduced_model_output/profiles_o2_flux_constant.csv')
 
     # change time scale
     my = 365*24*60*60*1e6
@@ -694,7 +705,7 @@ def profiles_by_species():
     Plot atmospheric profiles at three points in time.
     '''
     # read model output
-    output = pd.read_csv('reduced_model_output/atmospheric_profiles.csv')
+    output = pd.read_csv('reduced_model_output/profiles_o2_flux_constant.csv')
 
     # change time scale
     my = 365*24*60*60*1e6
@@ -771,6 +782,7 @@ parameter_space()
 results_with_proxies(o2_flux_increase=False)
 results_with_proxies(o2_flux_increase=True)
 results_with_proxies(ri_flux_decrease=True)
+results_with_proxies(o2_flux_increase=True, profiles=True)
+results_with_proxies(ri_flux_decrease=True, profiles=True)
 profiles()
-results_with_proxies(o2_flux_increase=False, profiles=True)
 profiles_by_species()
